@@ -94,8 +94,15 @@ def color_rows(ws):
             cell.fill = fill
 
 
+def to_frame(latest):
+    df = pd.DataFrame(latest)[list(LATEST_COLUMNS)]
+    # without this pandas turns the column into floats (45.0) because some stores have no stock count
+    df['stock_qty'] = df['stock_qty'].astype('Int64')
+    return df
+
+
 def save_excel(path, latest, history):
-    df = pd.DataFrame(latest)[list(LATEST_COLUMNS)].rename(columns=LATEST_COLUMNS)
+    df = to_frame(latest).rename(columns=LATEST_COLUMNS)
     # "new" alone isn't a change, it just means it's the first time the product is checked
     changed = [set(status.split(', ')) - {'new'} != set() for status in df['Status']]
     changes = df[changed].drop(columns='Error')
@@ -124,5 +131,4 @@ def save_excel(path, latest, history):
 
 
 def save_csv(path, latest):
-    df = pd.DataFrame(latest)[list(LATEST_COLUMNS)]
-    df.to_csv(path, index=False, encoding='utf-8-sig')
+    to_frame(latest).to_csv(path, index=False, encoding='utf-8-sig')

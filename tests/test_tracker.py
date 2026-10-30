@@ -124,6 +124,10 @@ def test_first_run(server, site, watchlist, tmp_path):
     first = {h: c.value for h, c in zip(headers, wb['Latest'][2])}
     assert first['Discount %'] == 23.1  # 9.99 instead of 12.99
 
+    csv_text = (tmp_path / 'output' / 'latest.csv').read_text(encoding='utf-8-sig')
+    bulbasaur = next(line for line in csv_text.splitlines() if line.startswith('Bulbasaur'))
+    assert ',yes,45,' in bulbasaur  # stock count stays a whole number
+
 
 def test_second_run_finds_changes(server, site, watchlist, tmp_path):
     run_main(server, tmp_path, watchlist)
